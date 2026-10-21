@@ -11,7 +11,7 @@
     {
       "name": "windows-glowup",
       "source": "./plugins/windows-glowup",
-      "description": "Tune-up Windows lengkap: bersihkan disk, lega-kan RAM, rapikan startup & service, perbaiki disk/sistem, update driver & aplikasi. Aman, terukur, survei paralel 4 agent.",
+      "description": "Tune-up Windows lengkap: bersihkan disk, lega-kan RAM, rapikan startup & service, perbaiki disk/sistem, update driver & aplikasi. Plus audit IDE & ekstensi, scan file berat, cek kecepatan. Aman, terukur, survei paralel 5 agent.",
       "version": "1.1.0",
       "category": "productivity",
       "keywords": ["windows", "cleanup", "performance", "disk", "ram", "maintenance"]
