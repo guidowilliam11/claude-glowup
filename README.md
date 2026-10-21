@@ -4,12 +4,21 @@ Plugin [Claude Code](https://claude.com/claude-code) untuk bikin Windows kamu **
 
 ## Install (2 perintah)
 
-Buka Claude Code, lalu ketik:
+**Cara A: dari terminal biasa** (PowerShell/CMD; ini jalan juga untuk pengguna aplikasi desktop Claude):
+
+```
+claude plugin marketplace add guidowilliam11/claude-glowup
+claude plugin install windows-glowup@claude-glowup
+```
+
+**Cara B: dari dalam sesi `claude` di terminal:**
 
 ```
 /plugin marketplace add guidowilliam11/claude-glowup
 /plugin install windows-glowup@claude-glowup
 ```
+
+> `/plugin` tidak tersedia di kotak chat aplikasi desktop Claude (tab Code). Pakai Cara A, lalu buka sesi baru.
 
 Lalu jalankan:
 
