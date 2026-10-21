@@ -1,0 +1,20 @@
+{
+  "name": "claude-glowup",
+  "owner": {
+    "name": "Guido William"
+  },
+  "metadata": {
+    "description": "Skills Claude Code untuk merawat dan mempercepat komputer.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "windows-glowup",
+      "source": "./plugins/windows-glowup",
+      "description": "Tune-up Windows lengkap: bersihkan disk, lega-kan RAM, rapikan startup & service, perbaiki disk/sistem, update driver & aplikasi. Aman, terukur, survei paralel 4 agent.",
+      "version": "1.0.0",
+      "category": "productivity",
+      "keywords": ["windows", "cleanup", "performance", "disk", "ram", "maintenance"]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "windows-glowup",
+  "version": "1.0.0",
+  "description": "Tune-up Windows lengkap: bersihkan disk, lega-kan RAM, rapikan startup & service, perbaiki disk/sistem, update driver & aplikasi.",
+  "author": {
+    "name": "Guido William"
+  },
+  "homepage": "https://github.com/guidowilliam11/claude-glowup",
+  "repository": "https://github.com/guidowilliam11/claude-glowup",
+  "license": "MIT",
+  "keywords": ["windows", "cleanup", "performance", "disk", "ram", "maintenance"]
+}
