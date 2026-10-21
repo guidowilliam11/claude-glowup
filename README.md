@@ -18,7 +18,15 @@ claude plugin install windows-glowup@claude-glowup
 /plugin install windows-glowup@claude-glowup
 ```
 
-> `/plugin` tidak tersedia di kotak chat aplikasi desktop Claude (tab Code). Pakai Cara A, lalu buka sesi baru.
+**Cara C: dari aplikasi desktop Claude (tab Code):** ketik di chat:
+
+```
+Install plugin windows-glowup dari marketplace guidowilliam11/claude-glowup
+```
+
+Claude akan menjalankan Cara A untukmu. Setelah selesai, buka **sesi baru** dan ketik `/windows-glowup`.
+
+> `/plugin` tidak tersedia di kotak chat aplikasi desktop. Pakai Cara A atau C.
 
 Lalu jalankan:
 
