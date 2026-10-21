@@ -21,7 +21,12 @@ Lalu jalankan:
 
 ## Apa yang dilakukan
 
-1. **Survei paralel.** 4 agent jalan bersamaan: Disk, Proyek dev, RAM & Startup, Kesehatan. Semua read-only, dengan angka nyata.
+1. **Survei paralel.** 5 agent jalan bersamaan, semua read-only dengan angka nyata:
+   - **Disk:** termasuk scan cepat file berat (±1,8 juta file dalam ±2 menit) yang dikelompokkan per kategori.
+   - **Proyek dev:** node_modules, .next, target dan sejenisnya, termasuk di dalam worktree.
+   - **RAM & Startup.**
+   - **Kesehatan & Kecepatan:** apakah disk, RAM dan CPU jalan sesuai kelasnya.
+   - **IDE & Ekstensi:** editor dobel, ekstensi berat, versi lama yang tertinggal, dan ekstensi yang terpasang di beberapa editor.
 2. **Laporan tiga kategori.** ✅ aman dihapus · ⚠️ kamu yang putuskan · ⛔ jangan disentuh (dengan alasannya). Tidak ada yang dihapus sebelum kamu memilih.
 3. **Eksekusi aman.**
    - Cache dan artefak build (`node_modules`, `.next`, Rust `target`, Temp, cache browser) dihapus dengan cara yang tidak ikut menelusuri junction.

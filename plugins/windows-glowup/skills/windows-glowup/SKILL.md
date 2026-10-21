@@ -1,6 +1,6 @@
 ---
 name: windows-glowup
-description: Full Windows 10/11 PC tune-up - find what fills the disk, free RAM, trim startup apps and third-party services, clean dev build artifacts and caches, repair disk/system files, update drivers and apps. Use when the user says their disk or RAM is full, the laptop is slow, or asks to clean, speed up, debloat, refresh or "make Windows faster/cleaner".
+description: Full Windows 10/11 PC tune-up - find what fills the disk (fast big-file scan), free RAM, trim startup apps and third-party services, clean dev build artifacts and caches, audit duplicate IDEs and bloated/unused editor extensions, check whether disk/RAM/CPU speed is normal, repair disk/system files, update drivers and apps. Use when the user says their disk or RAM is full, the laptop is slow, or asks to clean, speed up, debloat, refresh or "make Windows faster/cleaner".
 ---
 
 # Windows Glow-Up
@@ -22,14 +22,15 @@ A safe, fast and complete Windows tune-up. It has three phases: **survey in para
 
 ## Phase 1: Survey (fast, parallel)
 
-Spawn **4 Explore agents at once** (one message, four `Agent` calls, `subagent_type: "Explore"`, medium breadth). Each one is read-only and returns a ranked table with real numbers. Tell each to use `scripts/survey.ps1 -Section <name>` where possible:
+Spawn **5 Explore agents at once** (one message, five `Agent` calls, `subagent_type: "Explore"`, medium breadth). Each one is read-only and returns a ranked table with real numbers. Scripts are in this skill's `scripts/` folder. Give each agent the absolute path, and run them with `pwsh` (PowerShell 7) when available:
 
-| Agent | Section | Look for |
+| Agent | Script | Look for |
 |---|---|---|
-| A, Disk | `disk` | Size of `%LOCALAPPDATA%\Temp` (especially hundreds of `edge-*` folders of ~0.5 GB each = leftover browser-automation profiles), npm/pnpm/bun/cargo/pip caches, Docker `docker_data.vhdx`, WSL `ext4.vhdx`, Claude `vm_bundles`, `C:\AMD`, `ProgramData\NVIDIA Corporation\Downloader`, `SoftwareDistribution\Download`, Steam workshop, top folders under Users/Program Files/ProgramData |
-| B, Dev projects | `dev` | `scripts/find-regen.ps1 -Root <code folder>`: node_modules, .next, target, dist, .turbo, .venv, also inside `.claude\worktrees\*` (often 10× node_modules) |
-| C, RAM & startup | `ram` | Top processes by RAM, Run/RunOnce/Startup folder entries + their StartupApproved state, running third-party services (not in `\Windows\`), duplicate tools (e.g. Lightshot + Snipaste + Snipping Tool) |
-| D, Health | `health` | `Get-PhysicalDisk` health, TRIM, NTFS event 98 ("Spot Fix"/"Full Chkdsk"), recurring 7000/7009 errors (a service failing at every boot = 45 s slower boot), BSOD 41/6008, Windows Update failures, GPU driver date, BIOS version, `winget upgrade` list, duplicate products (e.g. 9 SQL Server instances, two VS editions) |
+| A, Disk | `survey.ps1 -Section disk` + `bigfiles.ps1 -Path C:\ -MinMB 500` | Size of `%LOCALAPPDATA%\Temp` (especially hundreds of `edge-*` folders of ~0.5 GB each = leftover browser-automation profiles), npm/pnpm/bun/cargo/pip caches, Docker `docker_data.vhdx`, WSL `ext4.vhdx`, Claude `vm_bundles`, `C:\AMD`, NVIDIA Downloader/`UpdateFramework\ota-artifacts` (driver installers already installed), `SoftwareDistribution\Download`, Steam workshop. `bigfiles.ps1` scans ~1.8 million files in ~2 minutes and groups the big files by category (game, VM, ISO, installer, archive, log, video, do-not-touch) |
+| B, Dev projects | `find-regen.ps1 -Root <code folder>` | node_modules, .next, target, dist, .turbo, .venv, also inside `.claude\worktrees\*` (often 10× node_modules); huge logs (e.g. `mongod.log`), forgotten `.zip` copies of projects |
+| C, RAM & startup | `survey.ps1 -Section ram` | Top processes by RAM, Run/RunOnce/Startup folder entries + their StartupApproved state, running third-party services (not in `\Windows\`), duplicate tools (e.g. Lightshot + Snipaste + Snipping Tool) |
+| D, Health & speed | `survey.ps1 -Section health` + `speedcheck.ps1` | `Get-PhysicalDisk` health, TRIM, NTFS event 98 ("Spot Fix"/"Full Chkdsk"), recurring 7000/7009 errors (a service failing at every boot = 45 s slower boot), BSOD 41/6008, Windows Update failures, GPU driver date, BIOS version, `winget upgrade` list, duplicate products (e.g. 9 SQL Server instances). **Is the speed normal?** Disk class (NVMe/SATA/HDD) vs measured speed, RAM configured vs rated MHz + channel count, CPU boosting under load, power plan, on battery or AC |
+| E, IDE & extensions | `ide-audit.ps1` | How many editors are installed (VS Code, Cursor, Windsurf, Antigravity, Zed, JetBrains, Visual Studio, Eclipse, Sublime, Android Studio); app size, extensions size and data size per editor with a normal/large/heavy verdict; heavy extensions (>150 MB); **orphan folders / old versions** that are not listed in the editor's `extensions.json` (safe to delete); extensions duplicated across editors; caches `workspaceStorage`, `CachedExtensionVSIXs`, `logs` |
 
 Combine the results into one ranked report. Present it in **three categories**:
 - ✅ **Safe, changes nothing** (caches, leftover installers, build artifacts)
@@ -43,6 +44,13 @@ Ask the user to choose. Don't delete anything before they choose.
 Do it yourself (no admin needed, user-level):
 - Dev artifacts: `scripts/remove-regen.ps1 -Root <folder>` (node_modules/.next/target/dist; `.venv` is kept and reported). Afterwards check `git status` in each repo.
 - User caches: `.bun\install\cache`, `npm-cache`, `pnpm`, `.cargo\registry`, `.cache\*` the user agreed to.
+- **IDE & extensions** (close the editor first; all user-level):
+  - Orphan extension folders / old versions reported by `ide-audit.ps1`: delete the folder (`cmd /c rmdir /s /q`). The editor never loads them.
+  - `CachedExtensionVSIXs`, `logs`, `Cache`, `Code Cache`, `CachedData` of each editor: safe to delete.
+  - `User\workspaceStorage`: only delete subfolders whose `LastWriteTime` is older than 90 days. They hold per-project UI state, so a project that is opened again just starts fresh.
+  - Extensions the user no longer uses: show the list (heaviest first, plus duplicates across editors), let the user pick, then `<cli> --uninstall-extension <publisher.name>` (`code`, `cursor`, `windsurf`, `antigravity`, `codium`). Don't uninstall an extension the user hasn't picked.
+  - Duplicate editors (e.g. VS Code + Cursor + Antigravity + Windsurf): suggest keeping 1–2, and uninstall the rest through the official uninstaller (admin script).
+  - Sizes to judge: extensions folder <1.5 GB normal, 1.5–3 GB large, >3 GB heavy. A single extension >150 MB usually ships a runtime (C/C++ tools, Java, Python env, AI assistants like ChatGPT/Gemini, which keep their old versions behind).
 - Tell the user what needs reinstalling afterwards (`npm install`, `cargo build`, venv tooling under `target/`).
 
 Generate a script for the user to run as Administrator (save it to `%USERPROFILE%\Documents\windows-glowup\`):
@@ -72,6 +80,18 @@ On recent builds, `chkdsk C: /spotfix`, `Repair-Volume -SpotFix/-OfflineScanAndF
 - OEM: Lenovo Vantage / MyASUS / Dell Update for BIOS and drivers (with the charger plugged in).
 - Laptop thermal mode: Balance + AI Engine as the default; Performance for heavy builds or gaming on AC; Quiet on battery.
 - Electron apps (Logi Options+, Teams, etc.): close the window, the agent keeps running; or uninstall when the custom feature isn't needed.
+
+## Is the speed normal? (speedcheck.ps1)
+
+| Component | Normal | Action when below |
+|---|---|---|
+| NVMe PCIe 3 / 4 | write 1000–3000 / 3000–7000 MB/s, read 2000–3500 / 5000–7000 | free up space (<10% free = slow), check temperature, Balance/Performance mode, update the storage driver/firmware through the OEM |
+| SATA SSD | ~400–550 MB/s | same as above |
+| HDD | ~100–180 MB/s | recommend migrating to an SSD |
+| RAM | configured MHz = rated MHz, 2 sticks (dual channel) | desktop: enable XMP/EXPO in BIOS; a single stick = suggest adding a matching one |
+| CPU | `% Processor Performance` >100% under load (boost) | plug in the charger, leave Quiet/Battery saver, clean dust from the fans |
+
+The write test without admin is only **indicative**: Defender scanning each new file plus PowerShell overhead caps it around 350–1400 MB/s even on fast NVMe, and the number varies from run to run. Don't call the disk slow from that number alone. Run `speedcheck.ps1` as Administrator so winsat measures the real read/write speed.
 
 ## winget exit code cheat sheet
 
